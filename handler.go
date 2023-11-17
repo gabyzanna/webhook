@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"math/rand"
 
 	"github.com/aiteung/atapi"
 	"github.com/aiteung/atmessage"
@@ -17,7 +18,7 @@ func PostBalasan(w http.ResponseWriter, r *http.Request) {
 	var msg model.IteungMessage
 	var resp atmessage.Response
 	json.NewDecoder(r.Body).Decode(&msg)
-	link := "https://medium.com/@gabriellayouzanna/memahami-whatsauth-panduan-untuk-keamanan-2fa-otp-dan-whatsapp-gateway-api-17edce18158a" + " dan " + "#"
+	link := "https://medium.com/@gabriellayouzanna/memahami-whatsauth-panduan-untuk-keamanan-2fa-otp-dan-whatsapp-gateway-api-17edce18158a"
 	if r.Header.Get("Secret") == os.Getenv("SECRET") {
 		if msg.Message == "loc" || msg.Message == "Loc" || msg.Message == "lokasi" || msg.LiveLoc {
 			location, err := ReverseGeocode(msg.Latitude, msg.Longitude)
@@ -36,10 +37,15 @@ func PostBalasan(w http.ResponseWriter, r *http.Request) {
 			}
 			resp, _ = atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv("TOKEN"), dt, "https://api.wa.my.id/api/send/message/text")
 		} else {
+			rdm := [] string{
+				"Hallawwww " + msg.Alias_name,
+				"Sharelocnya kak",
+				"Jangan spam yagesya",
+			}
 			dt := &wa.TextMessage{
 				To:       msg.Phone_number,
 				IsGroup:  false,
-				Messages: "Anyeonggggg, jangan spam yeeaaa"
+				Messages: GetRandomString(rdm),
 			}
 			resp, _ = atapi.PostStructWithToken[atmessage.Response]("Token", os.Getenv("TOKEN"), dt, "https://api.wa.my.id/api/send/message/text")
 		}
@@ -102,4 +108,9 @@ func Liveloc(w http.ResponseWriter, r *http.Request) {
 		resp.Response = "Secret Salah"
 	}
 	fmt.Fprintf(w, resp.Response)
+}
+
+func GetRandomString(strings []string) string {
+	randomIndex := rand.Intn(len(strings))
+	return strings[randomIndex]
 }
